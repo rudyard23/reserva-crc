@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="reserva.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="1"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1508"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="asientos" custom_title="0" dock_id="1" table="4,8:mainasientos"/><dock_state state="000000ff00000000fd00000001000000020000024800000201fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000002480000013300ffffff000002480000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="alumnos" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="111"/><column index="3" value="87"/><column index="4" value="83"/><column index="5" value="97"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="asientos" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="35"/><column index="2" value="52"/><column index="3" value="56"/><column index="4" value="69"/><column index="5" value="79"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">DROP TABLE IF EXISTS asientos;
+
+CREATE TABLE asientos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero TEXT UNIQUE,
+  fila TEXT,
+  zona TEXT,
+  estado TEXT
+);
+
+-- Insertar las filas manualmente (de A a AX = 50 filas)
+WITH filas(letra) AS (
+  SELECT 'A' UNION ALL SELECT 'B' UNION ALL SELECT 'C' UNION ALL SELECT 'D' UNION ALL SELECT 'E'
+  UNION ALL SELECT 'F' UNION ALL SELECT 'G' UNION ALL SELECT 'H' UNION ALL SELECT 'I' UNION ALL SELECT 'J'
+  UNION ALL SELECT 'K' UNION ALL SELECT 'L' UNION ALL SELECT 'M' UNION ALL SELECT 'N' UNION ALL SELECT 'O'
+  UNION ALL SELECT 'P' UNION ALL SELECT 'Q' UNION ALL SELECT 'R' UNION ALL SELECT 'S' UNION ALL SELECT 'T'
+  UNION ALL SELECT 'U' UNION ALL SELECT 'V' UNION ALL SELECT 'W' UNION ALL SELECT 'X' UNION ALL SELECT 'Y'
+  UNION ALL SELECT 'Z' UNION ALL SELECT 'AA' UNION ALL SELECT 'AB' UNION ALL SELECT 'AC' UNION ALL SELECT 'AD'
+  UNION ALL SELECT 'AE' UNION ALL SELECT 'AF' UNION ALL SELECT 'AG' UNION ALL SELECT 'AH' UNION ALL SELECT 'AI'
+  UNION ALL SELECT 'AJ' UNION ALL SELECT 'AK' UNION ALL SELECT 'AL' UNION ALL SELECT 'AM' UNION ALL SELECT 'AN'
+  UNION ALL SELECT 'AO' UNION ALL SELECT 'AP' UNION ALL SELECT 'AQ' UNION ALL SELECT 'AR' UNION ALL SELECT 'AS'
+  UNION ALL SELECT 'AT' UNION ALL SELECT 'AU' UNION ALL SELECT 'AV' UNION ALL SELECT 'AW' UNION ALL SELECT 'AX'
+)
+
+-- Insertar los 20 asientos por fila
+INSERT INTO asientos (numero, fila, zona, estado)
+SELECT
+  letra || n AS numero,
+  letra,
+  CASE
+    WHEN n BETWEEN 1 AND 6 THEN 'Izquierda'
+    WHEN n BETWEEN 7 AND 14 THEN 'Centro'
+    ELSE 'Derecha'
+  END AS zona,
+  'libre' AS estado
+FROM filas, (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL
+             SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL
+             SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL
+             SELECT 19 UNION ALL SELECT 20) nums;
+</sql><current_tab id="0"/></tab_sql></sqlb_project>

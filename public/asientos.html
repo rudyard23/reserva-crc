@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Selecciona tus asientos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #escenario {
+      margin: 20px auto 10px;
+      padding: 15px 30px;
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      width: fit-content;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    #zonas-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+
+    .zona {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      gap: 10px;
+      text-align: center;
+    }
+
+    .zona h3 {
+      grid-column: span 4;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    .asiento {
+      padding: 10px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .asiento.ocupado {
+      background-color: #f44336;
+      cursor: not-allowed;
+    }
+
+    .asiento.seleccionado {
+      background-color: #ff9800;
+    }
+
+    #reservar-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #reservar-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Selecciona tus asientos</h1>
+
+  <!-- ESCENARIO -->
+  <div id="escenario">ESCENARIO</div>
+
+  <!-- Contenedor dividido por zonas -->
+  <div id="zonas-container">
+    <div class="zona" id="izquierda"><h3>Izquierda</h3></div>
+    <div class="zona" id="centro"><h3>Centro</h3></div>
+    <div class="zona" id="derecha"><h3>Derecha</h3></div>
+  </div>
+
+  <button id="reservar-btn" disabled>Reservar</button>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const alumnoId = params.get("alumno_id");
+    const reservarBtn = document.getElementById("reservar-btn");
+    let seleccionados = [];
+
+    fetch(`/asientos?alumno_id=${alumnoId}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Error al cargar los asientos");
+        return res.json();
+      })
+      .then(data => {
+        const { alumno, asientos } = data;
+        const tope = alumno.tope_lugares - alumno.lugares_usados;
+
+        // Limpiar contenido previo de zonas
+        document.getElementById("izquierda").innerHTML = "<h3>Izquierda</h3>";
+        document.getElementById("centro").innerHTML = "<h3>Centro</h3>";
+        document.getElementById("derecha").innerHTML = "<h3>Derecha</h3>";
+
+        asientos.forEach(asiento => {
+          const btn = document.createElement("button");
+          btn.textContent = asiento.numero;
+          btn.classList.add("asiento");
+          btn.dataset.id = asiento.id;
+
+          if (asiento.estado === 'reservado') {
+            btn.classList.add("ocupado");
+            btn.disabled = true;
+          }
+
+          btn.addEventListener("click", () => {
+            if (btn.classList.contains("seleccionado")) {
+              btn.classList.remove("seleccionado");
+              seleccionados = seleccionados.filter(id => id !== asiento.id);
+            } else {
+              if (seleccionados.length < tope) {
+                btn.classList.add("seleccionado");
+                seleccionados.push(asiento.id);
+              } else {
+                alert(`Solo puedes seleccionar hasta ${tope} asientos.`);
+              }
+            }
+            reservarBtn.disabled = seleccionados.length === 0;
+          });
+
+          // Insertar botón en la zona correspondiente
+          const zona = asiento.zona?.toLowerCase();
+          if (zona && document.getElementById(zona)) {
+            document.getElementById(zona).appendChild(btn);
+          }
+        });
+
+        reservarBtn.disabled = true;
+
+        reservarBtn.addEventListener("click", () => {
+          fetch("/reservar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              alumno_id: alumnoId,
+              asientos: seleccionados
+            })
+          })
+          .then(res => res.text())
+          .then(msg => {
+            alert(msg);
+            window.location.reload();
+          })
+          .catch(() => alert("Error al reservar los asientos"));
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById("zonas-container").innerHTML = "Error al cargar los asientos.";
+      });
+  </script>
+</body>
+</html>
